@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            background-color: #f8f9fa; /* Light gray background */
+        }
+
+        .todo-container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .completed {
+            text-decoration: line-through;
+            color: #aaa;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 5px;
+            float: right;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container todo-container">
+        <h1 class="mb-4 text-center">Todo List</h1>
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" id="new-task" placeholder="Add new task">
+            <button class="btn btn-primary" type="button" id="add-task">Add</button>
+        </div>
+        <ul class="list-group" id="task-list">
+            </ul>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const taskInput = document.getElementById('new-task');
+            const addTaskButton = document.getElementById('add-task');
+            const taskList = document.getElementById('task-list');
+
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            renderTasks();
+
+            addTaskButton.addEventListener('click', () => {
+                const taskText = taskInput.value.trim();
+                if (taskText !== '') {
+                    tasks.push({ text: taskText, completed: false });
+                    taskInput.value = '';
+                    saveTasks();
+                    renderTasks();
+                }
+            });
+
+            function renderTasks() {
+                taskList.innerHTML = '';
+                tasks.forEach((task, index) => {
+                    const listItem = document.createElement('li');
+                    listItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
+                    if (task.completed) {
+                        listItem.classList.add('completed');
+                    }
+                    listItem.innerHTML = `
+                        <span class="task-text">${task.text}</span>
+                        <div class="task-actions">
+                        <button class="btn btn-sm btn-success complete-btn" data-index="${index}">
+                            <i class="fas fa-check"></i>
+                        </button>
+                            <button class="btn btn-sm btn-danger delete-btn" data-index="${index}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    taskList.appendChild(listItem);
+                });
+
+                //Event delegation for dynamically added buttons
+                const deleteButtons = document.querySelectorAll('.delete-btn');
+                deleteButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const index = button.dataset.index;
+                        tasks.splice(index, 1);
+                        saveTasks();
+                        renderTasks();
+                    });
+                });
+                const completeButtons = document.querySelectorAll('.complete-btn');
+                completeButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const index = button.dataset.index;
+                        tasks[index].completed = !tasks[index].completed;
+                        saveTasks();
+                        renderTasks();
+                    });
+                });
+            }
+
+            function saveTasks() {
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+            }
+        });
+    </script>
+</body>
+
+</html>
